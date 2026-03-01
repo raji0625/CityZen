@@ -9,9 +9,10 @@ app = Flask(__name__)
 CORS(app)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-DATA_CSV = os.path.join(BASE, '../data/master_assets.csv')
+ROOT = os.path.dirname(BASE)
+DATA_CSV = os.path.join(ROOT, 'data/master_assets.csv')
 DB_PATH  = os.path.join(BASE, 'city_zen.db')
-FRONTEND = os.path.join(BASE, '../frontend')
+FRONTEND = os.path.join(ROOT, 'frontend')
 
 
 # ── DB SETUP ──────────────────────────────────────────────────
