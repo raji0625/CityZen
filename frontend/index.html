@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CityZen — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161d;
+    --surface2: #191d26;
+    --border: #232732;
+    --text: #e8eaf0;
+    --muted: #505670;
+    --accent: #22d3c8;
+    --green: #22d3c8;
+    --green-bg: #0d2422;
+    --red: #f05252;
+    --red-bg: #200f0f;
+    --yellow: #f0a030;
+    --yellow-bg: #1e1508;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, #232732 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.45;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body > * { position: relative; z-index: 1; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text);
+  }
+
+  /* NAV */
+  nav {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .nav-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    color: var(--text);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-logo::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nav-role {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .nav-complaints {
+    font-size: 13px;
+    color: var(--text);
+    text-decoration: none;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    cursor: pointer;
+    display: none;
+  }
+
+  .nav-complaints:hover { background: var(--bg); }
+
+  .btn-logout {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+
+  .btn-logout:hover { color: var(--red); }
+
+  /* SUMMARY */
+  .summary {
+    display: flex;
+    gap: 1px;
+    padding: 20px 24px 0;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .stat {
+    flex: 1;
+    background: var(--surface2);
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+  }
+
+  .stat:first-child { border-radius: 8px 0 0 8px; }
+  .stat:last-child { border-radius: 0 8px 8px 0; }
+
+  .stat-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .num-green { color: var(--accent); }
+  .num-yellow { color: var(--yellow); }
+  .num-red { color: var(--red); }
+
+  /* CONTROLS */
+  .controls {
+    max-width: 900px;
+    margin: 20px auto 0;
+    padding: 0 24px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-group {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); color: #0d0f14; border-color: var(--accent); }
+  .chip.chip-critical.active { background: var(--red); border-color: var(--red); color: #fff; }
+  .chip.chip-warning.active { background: var(--yellow); border-color: var(--yellow); color: #0d0f14; }
+  .chip.chip-healthy.active { background: var(--accent); border-color: var(--accent); color: #0d0f14; }
+
+  .spacer { flex: 1; }
+
+  .search-wrap {
+    position: relative;
+  }
+
+  .search-wrap input {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 7px 12px 7px 32px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface2);
+    color: var(--text);
+    outline: none;
+    width: 180px;
+    transition: border-color 0.12s;
+  }
+
+  .search-wrap input:focus { border-color: var(--accent); }
+
+  .search-wrap::before {
+    content: '⌕';
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 15px;
+    pointer-events: none;
+  }
+
+  /* ASSET LIST */
+  .list-wrap {
+    max-width: 900px;
+    margin: 16px auto 40px;
+    padding: 0 24px;
+  }
+
+  .list-header {
+    display: grid;
+    grid-template-columns: 1fr 100px 130px 80px;
+    padding: 8px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .asset-row {
+    display: grid;
+    grid-template-columns: 1fr 100px 130px 80px;
+    padding: 13px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    align-items: center;
+    transition: all 0.12s;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .asset-row:hover {
+    border-color: var(--accent);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+    transform: translateY(-1px);
+  }
+
+  .asset-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .asset-id {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .asset-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+
+  .pill-healthy { background: var(--green-bg); color: var(--accent); }
+  .pill-warning { background: var(--yellow-bg); color: var(--yellow); }
+  .pill-critical { background: var(--red-bg); color: var(--red); }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-healthy { background: var(--accent); }
+  .dot-warning { background: var(--yellow); }
+  .dot-critical { background: var(--red); animation: pulse 1.5s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .chevron {
+    color: var(--muted);
+    font-size: 16px;
+    text-align: right;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">CityZen</div>
+  <div class="nav-right">
+    <span class="nav-role" id="nav-role">public</span>
+    <a href="checker.html" style="font-size:13px;color:var(--text);text-decoration:none;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);">Anomaly Checker</a>
+    <a href="complaints.html" class="nav-complaints" id="complaints-link">Complaints</a>
+    <button class="btn-logout" onclick="logout()">Sign out</button>
+  </div>
+</nav>
+
+<div class="summary">
+  <div class="stat">
+    <div class="stat-num" id="stat-total">—</div>
+    <div class="stat-label">Total assets</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num num-green" id="stat-healthy">—</div>
+    <div class="stat-label">Healthy</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num num-yellow" id="stat-warning">—</div>
+    <div class="stat-label">Warning</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num num-red" id="stat-critical">—</div>
+    <div class="stat-label">Critical</div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="filter-group" id="type-filters">
+    <button class="chip active" onclick="setTypeFilter('', this)">All</button>
+    <button class="chip" onclick="setTypeFilter('bridge', this)">Bridges</button>
+    <button class="chip" onclick="setTypeFilter('building', this)">Buildings</button>
+    <button class="chip" onclick="setTypeFilter('streetlight', this)">Lights</button>
+    <button class="chip" onclick="setTypeFilter('pipeline', this)">Pipelines</button>
+    <button class="chip" onclick="setTypeFilter('road', this)">Roads</button>
+  </div>
+
+  <div class="filter-group" id="status-filters">
+    <button class="chip chip-critical" onclick="setStatusFilter('Critical', this)">Critical</button>
+    <button class="chip chip-warning" onclick="setStatusFilter('Warning', this)">Warning</button>
+    <button class="chip chip-healthy" onclick="setStatusFilter('Healthy', this)">Healthy</button>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div class="search-wrap">
+    <input type="text" placeholder="Search assets..." id="search" oninput="renderList()" />
+  </div>
+</div>
+
+<div class="list-wrap">
+  <div class="list-header">
+    <div>Asset</div>
+    <div>Type</div>
+    <div>Status</div>
+    <div></div>
+  </div>
+  <div id="asset-list">
+    <div class="empty">Loading assets…</div>
+  </div>
+</div>
+
+<script>
+  const API = '/api';
+  let allAssets = [];
+  let typeFilter = '';
+  let statusFilter = '';
+
+  const role = sessionStorage.getItem('role') || 'public';
+  document.getElementById('nav-role').textContent = role;
+  if (role === 'admin') {
+    document.getElementById('complaints-link').style.display = 'block';
+  }
+
+  async function init() {
+    try {
+      const [summaryRes, assetsRes] = await Promise.all([
+        fetch(`${API}/summary`),
+        fetch(`${API}/assets`)
+      ]);
+      const summary = await summaryRes.json();
+      allAssets = await assetsRes.json();
+
+      document.getElementById('stat-total').textContent = summary.total;
+      document.getElementById('stat-healthy').textContent = summary.healthy;
+      document.getElementById('stat-warning').textContent = summary.warning;
+      document.getElementById('stat-critical').textContent = summary.critical;
+
+      renderList();
+    } catch(e) {
+      document.getElementById('asset-list').innerHTML = '<div class="empty">Could not connect to server. Make sure Flask is running.</div>';
+    }
+  }
+
+  function setTypeFilter(val, btn) {
+    typeFilter = val;
+    document.querySelectorAll('#type-filters .chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderList();
+  }
+
+  function setStatusFilter(val, btn) {
+    if (statusFilter === val) {
+      statusFilter = '';
+      btn.classList.remove('active');
+    } else {
+      statusFilter = val;
+      document.querySelectorAll('#status-filters .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    renderList();
+  }
+
+  function renderList() {
+    const query = document.getElementById('search').value.toLowerCase();
+    let filtered = allAssets.filter(a => {
+      if (typeFilter && a.type !== typeFilter) return false;
+      if (statusFilter && a.health_status !== statusFilter) return false;
+      if (query && !a.name.toLowerCase().includes(query) && !a.asset_id.toLowerCase().includes(query)) return false;
+      return true;
+    });
+
+    const list = document.getElementById('asset-list');
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty">No assets match the current filters</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(a => {
+      const s = a.health_status.toLowerCase();
+      return `
+        <a class="asset-row" href="asset.html?id=${a.asset_id}">
+          <div>
+            <div class="asset-name">${a.name}</div>
+            <div class="asset-id">${a.asset_id}</div>
+          </div>
+          <div class="asset-type">${a.type}</div>
+          <div>
+            <span class="status-pill pill-${s}">
+              <span class="dot dot-${s}"></span>
+              ${a.health_status}
+            </span>
+          </div>
+          <div class="chevron">›</div>
+        </a>
+      `;
+    }).join('');
+  }
+
+  function logout() {
+    sessionStorage.removeItem('role');
+    window.location.href = 'login.html';
+  }
+
+  init();
+</script>
+</body>
+</html>

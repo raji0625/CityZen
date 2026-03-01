@@ -1,0 +1,56 @@
+asset_id,name,type,lat,lng,vibration,crack_index,load_tons,temperature,wind_speed,flicker_count,hours_offline,tilt_angle,co2,humidity,strain,pressure,flow_rate,leakage_flag,defect_count,avg_confidence,health_status,reason
+BR_001,Adyar Bridge,bridge,13.0067,80.2206,4.29,6.25,41.75,24.26,9.13,,,,,,,,,,,,Healthy,Crack index 6.25 exceeds warning limit of 4.0
+BR_002,Kotturpuram Bridge,bridge,13.015,80.235,3.8,2.98,55.62,24.21,5.73,,,,,,,,,,,,Warning,All structural readings within normal range
+BR_003,Pammal Bridge,bridge,12.9736,80.1444,2.42,7.13,87.37,26.11,2.62,,,,,,,,,,,,Critical,Crack index 7.13 exceeds critical limit of 7.0
+BR_004,Ambattur Bridge,bridge,13.1143,80.1548,4.35,8.53,46.09,18.77,9.84,,,,,,,,,,,,Critical,Crack index 8.53 exceeds critical limit of 7.0
+BR_005,Porur Bridge,bridge,13.0389,80.1567,0.51,4.3,42.09,32.9,11.34,,,,,,,,,,,,Warning,Crack index 4.3 exceeds warning limit of 4.0
+BR_006,Velachery Bridge,bridge,12.9815,80.2209,4.36,2.47,75.37,30.4,4.42,,,,,,,,,,,,Healthy,All structural readings within normal range
+BR_007,Tambaram Bridge,bridge,12.9229,80.1275,0.1,0.74,53.92,20.68,9.41,,,,,,,,,,,,Healthy,All structural readings within normal range
+BR_008,Mogappair Bridge,bridge,13.0827,80.1707,0.42,6.35,78.15,25.39,7.24,,,,,,,,,,,,Warning,Crack index 6.35 exceeds warning limit of 4.0
+BR_009,Sholinganallur Bridge,bridge,12.901,80.2279,2.54,2.48,81.25,25.69,5.84,,,,,,,,,,,,Healthy,All structural readings within normal range
+BR_010,Chromepet Bridge,bridge,12.9516,80.1462,5.69,7.78,40.45,25.58,13.81,,,,,,,,,,,,Critical,Crack index 7.78 exceeds critical limit of 7.0
+SL_001,Anna Nagar Light,streetlight,13.0827,80.2101,,,,22.08,,6.0,8.8,,,,,,,,,,Critical,Flicker count 6 — exceeds critical limit of 5
+SL_002,Adyar Signal,streetlight,13.0067,80.2206,,,,28.56,,3.0,18.7,,,,,,,,,,Warning,Flicker count 3 — exceeds warning limit of 3
+SL_003,T Nagar Main,streetlight,13.0418,80.2341,,,,17.15,,1.0,11.8,,,,,,,,,,Healthy,Light operating normally
+SL_004,Velachery Main,streetlight,12.9815,80.2209,,,,16.92,,6.0,18.5,,,,,,,,,,Critical,Flicker count 6 — exceeds critical limit of 5
+SL_005,OMR Junction,streetlight,12.901,80.2279,,,,20.19,,0.0,20.9,,,,,,,,,,Healthy,Light operating normally
+SL_006,Tambaram Light,streetlight,12.9229,80.1275,,,,21.36,,2.0,46.6,,,,,,,,,,Warning,Offline for 46.6 hrs — exceeds warning limit of 24 hrs
+SL_007,Porur Junction,streetlight,13.0389,80.1567,,,,21.6,,4.0,14.5,,,,,,,,,,Warning,Flicker count 4 — exceeds warning limit of 3
+SL_008,Mogappair Light,streetlight,13.0827,80.1707,,,,13.11,,0.0,40.1,,,,,,,,,,Warning,Offline for 40.1 hrs — exceeds warning limit of 24 hrs
+SL_009,Guindy Signal,streetlight,13.0067,80.2206,,,,19.86,,4.0,6.9,,,,,,,,,,Warning,Flicker count 4 — exceeds warning limit of 3
+SL_010,Chromepet Light,streetlight,12.9516,80.1462,,,,24.29,,3.0,4.3,,,,,,,,,,Warning,Flicker count 3 — exceeds warning limit of 3
+SL_011,Perambur Signal,streetlight,13.1167,80.2333,,,,32.83,,2.0,45.6,,,,,,,,,,Warning,Offline for 45.6 hrs — exceeds warning limit of 24 hrs
+SL_012,Royapettah Light,streetlight,13.0543,80.2627,,,,29.94,,4.0,48.7,,,,,,,,,,Critical,Offline for 48.7 hrs — exceeds critical limit of 48 hrs
+SL_013,Mylapore Signal,streetlight,13.0339,80.2686,,,,25.23,,2.0,31.8,,,,,,,,,,Warning,Offline for 31.8 hrs — exceeds warning limit of 24 hrs
+SL_014,Sholinganallur Light,streetlight,12.901,80.2279,,,,17.21,,5.0,3.8,,,,,,,,,,Critical,Flicker count 5 — exceeds critical limit of 5
+SL_015,Ambattur Signal,streetlight,13.1143,80.1548,,,,24.93,,5.0,12.5,,,,,,,,,,Critical,Flicker count 5 — exceeds critical limit of 5
+BL_001,T Nagar Block,building,13.0418,80.2341,0.2716,,,26.42,,,,,,,108.36,,,,,,Healthy,Structural readings within safe parameters
+BL_002,Anna Nagar Tower,building,13.085,80.2101,0.3657,,,24.64,,,,,,,96.11,,,,,,Healthy,Structural readings within safe parameters
+BL_003,Royapettah Complex,building,13.0543,80.2627,0.2983,,,25.35,,,,,,,62.6,,,,,,Healthy,Structural readings within safe parameters
+BL_004,Mylapore Hall,building,13.0339,80.2686,0.0896,,,25.19,,,,,,,81.09,,,,,,Healthy,Structural readings within safe parameters
+BL_005,Guindy Office,building,13.0067,80.2206,0.1618,,,27.44,,,,,,,137.78,,,,,,Warning,Structural strain 137.78 με exceeds warning limit of 120
+BL_006,Velachery Complex,building,12.9815,80.2209,0.2446,,,24.48,,,,,,,104.9,,,,,,Healthy,Structural readings within safe parameters
+BL_007,OMR Tech Park,building,12.901,80.2279,0.1967,,,25.14,,,,,,,122.05,,,,,,Warning,Structural strain 122.05 με exceeds warning limit of 120
+BL_008,Perambur Block,building,13.1167,80.2333,0.2398,,,28.94,,,,,,,224.86,,,,,,Critical,Structural strain 224.86 με exceeds critical limit of 180
+BL_009,Chromepet Hall,building,12.9516,80.1462,0.4791,,,26.63,,,,,,,153.15,,,,,,Warning,"Structural strain 153.15 με exceeds warning limit of 120, Acceleration 0.4791 m/s² indicates elevated vibration"
+BL_010,Porur Complex,building,13.0389,80.1567,0.4482,,,27.01,,,,,,,200.94,,,,,,Critical,Structural strain 200.94 με exceeds critical limit of 180
+PL_001,Adyar Water Main,pipeline,13.0067,80.2206,3.6111,,,97.52,,,,,,,,47.79,115.92,1.0,,,Critical,Active leakage detected by sensor
+PL_002,T Nagar Pipeline,pipeline,13.0418,80.2341,2.4342,,,103.09,,,,,,,,46.72,104.36,1.0,,,Critical,Active leakage detected by sensor
+PL_003,Anna Nagar Supply Line,pipeline,13.0827,80.2101,3.0969,,,95.86,,,,,,,,45.21,92.42,1.0,,,Critical,Active leakage detected by sensor
+PL_004,Velachery Distribution,pipeline,12.9815,80.2209,2.9968,,,100.6,,,,,,,,52.8,96.07,1.0,,,Critical,Active leakage detected by sensor
+PL_005,OMR Industrial Pipe,pipeline,12.901,80.2279,2.9283,,,96.61,,,,,,,,64.97,73.64,0.0,,,Healthy,"No leakage detected, pressure nominal"
+PL_006,Tambaram Water Main,pipeline,12.9229,80.1275,2.9837,,,98.47,,,,,,,,58.62,73.2,0.0,,,Healthy,"No leakage detected, pressure nominal"
+PL_007,Porur Supply Line,pipeline,13.0389,80.1567,3.0321,,,97.01,,,,,,,,66.48,53.07,0.0,,,Healthy,"No leakage detected, pressure nominal"
+PL_008,Guindy Pipeline,pipeline,13.0067,80.2206,3.4734,,,100.55,,,,,,,,75.23,75.05,0.0,,,Healthy,"No leakage detected, pressure nominal"
+PL_009,Chromepet Distribution,pipeline,12.9516,80.1462,2.6264,,,105.99,,,,,,,,57.66,90.99,0.0,,,Healthy,"No leakage detected, pressure nominal"
+PL_010,Perambur Water Main,pipeline,13.1167,80.2333,2.5768,,,96.14,,,,,,,,57.66,60.89,0.0,,,Healthy,"No leakage detected, pressure nominal"
+RD_001,Anna Salai Stretch,road,13.0569,80.2425,,,,,,,,,,,,,,,3.0,0.303,Warning,YOLOv8 detected 3 defect(s) with 30% avg confidence
+RD_002,OMR Phase 1,road,12.9279,80.2157,,,,,,,,,,,,,,,2.0,0.9,Warning,YOLOv8 detected 2 defect(s) with 90% avg confidence
+RD_003,GST Road Section,road,12.9715,80.1959,,,,,,,,,,,,,,,1.0,0.78,Warning,YOLOv8 detected 1 defect(s) with 78% avg confidence
+RD_004,ECR Stretch,road,12.8406,80.2323,,,,,,,,,,,,,,,7.0,0.413,Critical,YOLOv8 detected 7 defects with 41% avg confidence
+RD_005,Poonamallee Highway,road,13.0469,80.1165,,,,,,,,,,,,,,,2.0,0.405,Warning,YOLOv8 detected 2 defect(s) with 40% avg confidence
+RD_006,Mount Road Section,road,13.0569,80.2425,,,,,,,,,,,,,,,2.0,0.265,Warning,YOLOv8 detected 2 defect(s) with 26% avg confidence
+RD_007,Inner Ring Road,road,13.0418,80.2101,,,,,,,,,,,,,,,1.0,0.48,Healthy,No significant road defects detected by AI model
+RD_008,Rajiv Gandhi Salai,road,12.901,80.2279,,,,,,,,,,,,,,,1.0,0.38,Healthy,No significant road defects detected by AI model
+RD_009,NH48 Chennai,road,13.0826,80.2101,,,,,,,,,,,,,,,2.0,0.42,Warning,YOLOv8 detected 2 defect(s) with 42% avg confidence
+RD_010,Velachery Main Road,road,12.9815,80.2209,,,,,,,,,,,,,,,1.0,0.53,Warning,YOLOv8 detected 1 defect(s) with 53% avg confidence

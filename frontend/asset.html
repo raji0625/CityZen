@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asset Detail — CityZen</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161d;
+    --surface2: #191d26;
+    --border: #232732;
+    --text: #e8eaf0;
+    --muted: #505670;
+    --accent: #22d3c8;
+    --green: #22d3c8;
+    --green-bg: #0d2422;
+    --red: #f05252;
+    --red-bg: #200f0f;
+    --yellow: #f0a030;
+    --yellow-bg: #1e1508;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, #232732 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.45;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body > * { position: relative; z-index: 1; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  nav {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .back-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.12s;
+  }
+
+  .back-btn:hover { color: var(--text); }
+
+  .nav-sep { color: var(--border); }
+
+  .nav-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+
+  /* HEADER */
+  .asset-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 16px;
+  }
+
+  .asset-title {
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+
+  .asset-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .asset-id-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  .type-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .pill-healthy { background: var(--green-bg); color: var(--accent); }
+  .pill-warning { background: var(--yellow-bg); color: var(--yellow); }
+  .pill-critical { background: var(--red-bg); color: var(--red); }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-healthy { background: var(--accent); }
+  .dot-warning { background: var(--yellow); }
+  .dot-critical { background: var(--red); animation: pulse 1.5s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* LAYOUT GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .grid-wide {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 14px 18px 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* MAP */
+  #map {
+    height: 260px;
+    width: 100%;
+  }
+
+  /* SENSOR READINGS */
+  .readings {
+    padding: 0;
+  }
+
+  .reading-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .reading-row:last-child { border-bottom: none; }
+
+  .reading-key {
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+
+  .reading-val {
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+  }
+
+  .val-normal { color: var(--accent); }
+  .val-warning { color: var(--yellow); }
+  .val-critical { color: var(--red); }
+
+  /* REASON */
+  .reason-box {
+    padding: 16px 18px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .reason-box.status-critical { border-left: 3px solid var(--red); }
+  .reason-box.status-warning  { border-left: 3px solid var(--yellow); }
+  .reason-box.status-healthy  { border-left: 3px solid var(--accent); }
+
+  /* PIE CHART */
+  .chart-wrap {
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+  }
+
+  /* COMPLAINT FORM */
+  .complaint-section {
+    margin-top: 16px;
+  }
+
+  .complaint-toggle {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 13px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.12s;
+  }
+
+  .complaint-toggle:hover { border-color: var(--red); }
+  .complaint-toggle .toggle-icon { color: var(--muted); transition: transform 0.2s; }
+  .complaint-toggle.open .toggle-icon { transform: rotate(180deg); }
+
+  .complaint-form {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    padding: 20px;
+    margin-top: -6px;
+  }
+
+  .complaint-form.open { display: block; }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 12px;
+  }
+
+  .form-group label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.12s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--accent); background: var(--surface); }
+
+  .form-group textarea { resize: vertical; min-height: 80px; }
+
+  .severity-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .sev-btn {
+    flex: 1;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .sev-btn.active-high { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+  .sev-btn.active-medium { background: var(--yellow-bg); color: var(--yellow); border-color: var(--yellow); }
+  .sev-btn.active-low { background: var(--green-bg); color: var(--green); border-color: var(--green); }
+
+  .submit-complaint {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: opacity 0.12s;
+  }
+
+  .submit-complaint:hover { opacity: 0.88; }
+
+  .assigned-office {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 10px 12px;
+    background: var(--bg);
+    border-radius: 7px;
+    margin-bottom: 12px;
+    font-family: 'DM Mono', monospace;
+    display: none;
+  }
+
+  .success-msg {
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+    color: var(--green);
+    font-family: 'DM Mono', monospace;
+    display: none;
+  }
+
+  /* ADMIN COMPLAINTS */
+  .complaints-list {
+    padding: 0;
+  }
+
+  .complaint-item {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .complaint-item:last-child { border-bottom: none; }
+
+  .complaint-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+
+  .complaint-reporter { font-weight: 500; }
+  .complaint-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  .complaint-desc { color: var(--muted); margin: 4px 0; font-size: 12px; line-height: 1.5; }
+
+  .complaint-status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .complaint-status-select {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .complaint-save-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    background: var(--accent);
+    color: #0d0f14;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .complaint-note {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    width: 160px;
+  }
+
+  .no-complaints {
+    padding: 20px 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ADMIN OVERRIDE PANEL */
+  .override-section {
+    margin-top: 16px;
+  }
+
+  .override-toggle {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 13px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.12s;
+  }
+
+  .override-toggle:hover { border-color: var(--accent); }
+  .override-toggle.open { border-radius: 10px 10px 0 0; border-color: var(--accent); }
+  .override-toggle .tog-icon { color: var(--muted); transition: transform 0.2s; }
+  .override-toggle.open .tog-icon { transform: rotate(180deg); }
+
+  .override-form {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    padding: 20px;
+  }
+
+  .override-form.open { display: block; }
+
+  .override-status-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .os-btn {
+    flex: 1;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 9px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .os-btn.sel-healthy { background: var(--green-bg); color: var(--accent); border-color: var(--accent); }
+  .os-btn.sel-warning { background: var(--yellow-bg); color: var(--yellow); border-color: var(--yellow); }
+  .os-btn.sel-critical { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+
+  .override-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .ov-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .ov-field label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .ov-field input {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 8px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.12s;
+    width: 100%;
+  }
+
+  .ov-field input:focus { border-color: var(--accent); }
+
+  .ov-reason {
+    margin-bottom: 14px;
+  }
+
+  .ov-reason label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .ov-reason textarea {
+    width: 100%;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 9px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    outline: none;
+    resize: vertical;
+    min-height: 64px;
+    transition: border-color 0.12s;
+    line-height: 1.5;
+  }
+
+  .ov-reason textarea:focus { border-color: var(--accent); }
+
+  .override-save-btn {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 11px;
+    background: var(--accent);
+    color: #0d0f14;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: opacity 0.12s;
+  }
+
+  .override-save-btn:hover { opacity: 0.88; }
+
+  .override-confirm {
+    display: none;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    padding: 10px;
+    margin-top: 10px;
+  }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="back-btn">← Back</a>
+  <span class="nav-sep">·</span>
+  <span class="nav-title" id="nav-asset-name">Loading…</span>
+</nav>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="asset-header">
+    <div>
+      <h1 class="asset-title" id="asset-name">—</h1>
+      <div class="asset-meta">
+        <span class="asset-id-badge" id="asset-id">—</span>
+        <span class="nav-sep">·</span>
+        <span class="type-badge" id="asset-type">—</span>
+      </div>
+    </div>
+    <div class="status-badge" id="status-badge">—</div>
+  </div>
+
+  <!-- MAP + CHART ROW -->
+  <div class="grid">
+    <div class="card">
+      <div class="card-header">Location</div>
+      <div id="map"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">Sensor Health</div>
+      <div class="chart-wrap">
+        <canvas id="sensorChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- READINGS + REASON ROW -->
+  <div class="grid">
+    <div class="card">
+      <div class="card-header">Sensor Readings</div>
+      <div class="readings" id="readings"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">Anomaly Reason</div>
+      <div class="reason-box" id="reason-box"></div>
+    </div>
+  </div>
+
+  <!-- PUBLIC: COMPLAINT FORM -->
+  <div class="complaint-section" id="complaint-section" style="display:none;">
+    <button class="complaint-toggle" id="complaint-toggle" onclick="toggleComplaint()">
+      <span>🚨 Report damage or issue</span>
+      <span class="toggle-icon">▾</span>
+    </button>
+    <div class="complaint-form" id="complaint-form">
+      <div class="assigned-office" id="assigned-office">Assigned to: —</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Your name</label>
+          <input type="text" id="c-name" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label>Contact</label>
+          <input type="text" id="c-contact" placeholder="Phone / Email" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Severity</label>
+        <div class="severity-row">
+          <button class="sev-btn" onclick="setSeverity('High', this)">High</button>
+          <button class="sev-btn" onclick="setSeverity('Medium', this)">Medium</button>
+          <button class="sev-btn" onclick="setSeverity('Low', this)">Low</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="c-desc" placeholder="Describe the damage or issue you observed…"></textarea>
+      </div>
+      <button class="submit-complaint" onclick="submitComplaint()">Submit Report</button>
+      <div class="success-msg" id="success-msg">✓ Complaint submitted successfully</div>
+    </div>
+  </div>
+
+
+  <!-- ADMIN OVERRIDE PANEL -->
+  <div class="override-section" id="override-section" style="display:none;">
+    <button class="override-toggle" id="override-toggle" onclick="toggleOverride()">
+      <span>🛠 Admin Override — Edit asset health directly</span>
+      <span class="tog-icon">▾</span>
+    </button>
+    <div class="override-form" id="override-form">
+
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Health Status</div>
+      <div class="override-status-row">
+        <button class="os-btn" id="os-healthy"  onclick="setOverrideStatus('Healthy')">Healthy</button>
+        <button class="os-btn" id="os-warning"  onclick="setOverrideStatus('Warning')">Warning</button>
+        <button class="os-btn" id="os-critical" onclick="setOverrideStatus('Critical')">Critical</button>
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Sensor Values</div>
+      <div class="override-fields" id="override-fields"></div>
+
+      <div class="ov-reason">
+        <label>Reason / Note</label>
+        <textarea id="ov-reason" placeholder="Describe why you're overriding this asset's health status…"></textarea>
+      </div>
+
+      <button class="override-save-btn" onclick="saveOverride()">Save Override</button>
+      <div class="override-confirm" id="override-confirm">✓ Asset updated successfully</div>
+    </div>
+  </div>
+
+  <!-- ADMIN: COMPLAINTS LIST -->
+  <div class="card" id="admin-complaints" style="display:none; margin-top:16px;">
+    <div class="card-header">Complaints for this asset</div>
+    <div class="complaints-list" id="complaints-list">
+      <div class="no-complaints">No complaints filed</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API = '/api';
+  const role = sessionStorage.getItem('role') || 'public';
+  const params = new URLSearchParams(location.search);
+  const assetId = params.get('id');
+  let assetData = null;
+  let selectedSeverity = 'High';
+
+  // Chennai zone → office mapping
+  function getOffice(lat, lng) {
+    if (lat > 13.10) return 'GCC — North Zone, Perambur';
+    if (lat < 12.97) return 'GCC — South Zone, Adyar';
+    if (lng > 80.26) return 'GCC — East Zone, Royapettah';
+    if (lng < 80.18) return 'GCC — West Zone, Anna Nagar';
+    return 'GCC — Central Zone, T Nagar';
+  }
+
+  async function init() {
+    if (!assetId) { window.location.href = 'index.html'; return; }
+
+    try {
+      const res = await fetch(`${API}/assets/${assetId}`);
+      assetData = await res.json();
+    } catch(e) {
+      document.getElementById('asset-name').textContent = 'Could not load asset';
+      return;
+    }
+
+    const a = assetData;
+    const s = a.health_status.toLowerCase();
+
+    // Header
+    document.title = `${a.name} — CityZen`;
+    document.getElementById('nav-asset-name').textContent = a.name;
+    document.getElementById('asset-name').textContent = a.name;
+    document.getElementById('asset-id').textContent = a.asset_id;
+    document.getElementById('asset-type').textContent = a.type;
+
+    const badge = document.getElementById('status-badge');
+    badge.textContent = a.health_status;
+    badge.innerHTML = `<span class="status-dot dot-${s}"></span>${a.health_status}`;
+    badge.className = `status-badge pill-${s}`;
+
+    // Map
+    const map = L.map('map').setView([a.lat, a.lng], 15);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '© Esri'
+    }).addTo(map);
+
+    const colors = { healthy: '#4f46e5', warning: '#b7791f', critical: '#c0392b' };
+    const color = colors[s] || '#888';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:18px;height:18px;border-radius:50%;background:${color};border:3px solid white;box-shadow:0 0 10px ${color}88;"></div>`,
+      iconSize: [18, 18],
+      iconAnchor: [9, 9]
+    });
+    L.marker([a.lat, a.lng], { icon }).addTo(map)
+      .bindPopup(`<b>${a.name}</b><br>${a.health_status}`).openPopup();
+    L.circle([a.lat, a.lng], { radius: 100, color, fillColor: color, fillOpacity: 0.08, weight: 1 }).addTo(map);
+
+    // Sensor readings
+    const fields = {
+      'Vibration': { val: a.vibration, unit: 'm/s²', warn: 5, crit: 8 },
+      'Crack Index': { val: a.crack_index, warn: 4, crit: 7 },
+      'Load': { val: a.load_tons, unit: 'tons' },
+      'Temperature': { val: a.temperature, unit: '°C' },
+      'Wind Speed': { val: a.wind_speed, unit: 'm/s' },
+      'Flicker Count': { val: a.flicker_count, warn: 3, crit: 5 },
+      'Hours Offline': { val: a.hours_offline, unit: 'hrs', warn: 24, crit: 48 },
+      'Tilt Angle': { val: a.tilt_angle, unit: '°', warn: 1, crit: 2 },
+      'CO₂': { val: a.co2, unit: 'ppm', warn: 700 },
+      'Humidity': { val: a.humidity, unit: '%' },
+      'Pressure': { val: a.pressure },
+      'Flow Rate': { val: a.flow_rate },
+      'Leakage': { val: a.leakage_flag !== null ? (a.leakage_flag ? 'Yes' : 'No') : null },
+      'Defect Count': { val: a.defect_count, warn: 2, crit: 4 },
+      'Avg Confidence': { val: a.avg_confidence },
+    };
+
+    const readings = document.getElementById('readings');
+    const chartLabels = [], chartValues = [], chartColors = [];
+
+    Object.entries(fields).forEach(([key, f]) => {
+      if (f.val === null || f.val === undefined) return;
+      let cls = 'val-normal';
+      if (f.crit !== undefined && parseFloat(f.val) >= f.crit) cls = 'val-critical';
+      else if (f.warn !== undefined && parseFloat(f.val) >= f.warn) cls = 'val-warning';
+      const display = f.unit ? `${f.val} ${f.unit}` : `${f.val}`;
+      readings.innerHTML += `
+        <div class="reading-row">
+          <span class="reading-key">${key}</span>
+          <span class="reading-val ${cls}">${display}</span>
+        </div>`;
+
+      // Add to chart data
+      const num = parseFloat(f.val);
+      if (!isNaN(num)) {
+        chartLabels.push(key);
+        chartValues.push(num);
+        const c = cls === 'val-critical' ? '#c0392b' : cls === 'val-warning' ? '#b7791f' : '#4f46e5';
+        chartColors.push(c);
+      }
+    });
+
+    if (!readings.children.length) {
+      readings.innerHTML = '<div style="padding:16px 18px;color:var(--muted);font-size:13px;">No sensor data available</div>';
+    }
+
+    // Pie chart
+    if (chartLabels.length) {
+      new Chart(document.getElementById('sensorChart'), {
+        type: 'doughnut',
+        data: {
+          labels: chartLabels,
+          datasets: [{ data: chartValues.map(() => 1), backgroundColor: chartColors, borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: {
+          plugins: {
+            legend: { position: 'right', labels: { font: { family: 'DM Mono', size: 10 }, color: '#8a8880', boxWidth: 10, padding: 8 } },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const i = ctx.dataIndex;
+                  return ` ${chartLabels[i]}: ${chartValues[i]}`;
+                }
+              }
+            }
+          },
+          cutout: '55%',
+        }
+      });
+    }
+
+    // Reason
+    const reasonBox = document.getElementById('reason-box');
+    reasonBox.textContent = a.reason || 'All readings within normal range.';
+    reasonBox.className = `reason-box status-${s}`;
+
+    // Role-based UI
+    if (role === 'public') {
+      const officeEl = document.getElementById('assigned-office');
+      const office = getOffice(a.lat, a.lng);
+      officeEl.textContent = `Will be assigned to: ${office}`;
+      officeEl.style.display = 'block';
+      document.getElementById('complaint-section').style.display = 'block';
+    }
+
+    if (role === 'admin') {
+      document.getElementById('admin-complaints').style.display = 'block';
+      document.getElementById('override-section').style.display = 'block';
+      buildOverrideFields(a);
+      loadComplaints();
+    }
+  }
+
+  function toggleComplaint() {
+    const form = document.getElementById('complaint-form');
+    const btn = document.getElementById('complaint-toggle');
+    form.classList.toggle('open');
+    btn.classList.toggle('open');
+  }
+
+  function setSeverity(sev, btn) {
+    selectedSeverity = sev;
+    document.querySelectorAll('.sev-btn').forEach(b => {
+      b.className = 'sev-btn';
+    });
+    btn.className = `sev-btn active-${sev.toLowerCase()}`;
+
+    // Update dot color based on severity
+    const colors = { High: 'critical', Medium: 'warning', Low: 'healthy' };
+    const badge = document.getElementById('status-badge');
+    // Only update visual if complaint is open
+  }
+
+  async function submitComplaint() {
+    const name = document.getElementById('c-name').value.trim();
+    const contact = document.getElementById('c-contact').value.trim();
+    const desc = document.getElementById('c-desc').value.trim();
+
+    if (!name || !desc) {
+      alert('Please enter your name and description.');
+      return;
+    }
+
+    const office = getOffice(assetData.lat, assetData.lng);
+    const complaint = {
+      asset_id: assetData.asset_id,
+      asset_name: assetData.name,
+      reporter_name: name,
+      contact: contact,
+      severity: selectedSeverity,
+      description: desc,
+      assigned_to: office,
+      status: 'Open'
+    };
+
+    try {
+      await fetch(`${API}/complaints`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(complaint)
+      });
+    } catch(e) {
+      // If server is down, still show success for demo
+    }
+
+    // Update dot color instantly
+    const statusBadge = document.getElementById('status-badge');
+    const sevMap = { High: 'critical', Medium: 'warning', Low: 'healthy' };
+    const newS = sevMap[selectedSeverity];
+    statusBadge.className = `status-badge pill-${newS}`;
+    statusBadge.innerHTML = `<span class="status-dot dot-${newS}"></span>${assetData.health_status} · ${selectedSeverity} severity reported`;
+
+    document.getElementById('complaint-form').innerHTML = `
+      <div style="text-align:center;padding:24px;color:var(--accent);font-family:'DM Mono',monospace;font-size:13px;line-height:1.8;">
+        ✓ Complaint submitted<br>
+        <span style="color:var(--muted)">Assigned to: ${office}</span>
+      </div>`;
+  }
+
+  async function loadComplaints() {
+    try {
+      const res = await fetch(`${API}/complaints?asset_id=${assetId}`);
+      const data = await res.json();
+      const list = document.getElementById('complaints-list');
+
+      if (!data.length) {
+        list.innerHTML = '<div class="no-complaints">No complaints filed for this asset</div>';
+        return;
+      }
+
+      list.innerHTML = data.map(c => `
+        <div class="complaint-item" id="complaint-${c.id}">
+          <div class="complaint-top">
+            <span class="complaint-reporter">${c.reporter_name}</span>
+            <span class="complaint-date">${c.submitted_at || '—'}</span>
+          </div>
+          <div class="complaint-desc">${c.description}</div>
+          <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin:4px 0;">
+            Severity: ${c.severity} · Assigned: ${c.assigned_to}
+          </div>
+          <div class="complaint-status-row">
+            <select class="complaint-status-select" id="status-${c.id}">
+              <option ${c.status==='Open'?'selected':''}>Open</option>
+              <option ${c.status==='In Progress'?'selected':''}>In Progress</option>
+              <option ${c.status==='Resolved'?'selected':''}>Resolved</option>
+            </select>
+            <input class="complaint-note" id="note-${c.id}" type="text" placeholder="Add note…" value="${c.admin_note||''}" />
+            <button class="complaint-save-btn" onclick="saveComplaint(${c.id})">Save</button>
+          </div>
+        </div>
+      `).join('');
+    } catch(e) {
+      document.getElementById('complaints-list').innerHTML = '<div class="no-complaints">Could not load complaints</div>';
+    }
+  }
+
+  async function saveComplaint(id) {
+    const status = document.getElementById(`status-${id}`).value;
+    const note = document.getElementById(`note-${id}`).value;
+    try {
+      await fetch(`${API}/complaints/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, admin_note: note })
+      });
+      const row = document.getElementById(`complaint-${id}`);
+      row.style.opacity = '0.6';
+      setTimeout(() => row.style.opacity = '1', 600);
+    } catch(e) {}
+  }
+
+
+  // ── ADMIN OVERRIDE ─────────────────────────────────────────
+  let overrideStatus = null;
+
+  function toggleOverride() {
+    const form = document.getElementById('override-form');
+    const btn  = document.getElementById('override-toggle');
+    form.classList.toggle('open');
+    btn.classList.toggle('open');
+  }
+
+  function setOverrideStatus(status) {
+    overrideStatus = status;
+    ['Healthy','Warning','Critical'].forEach(s => {
+      const el = document.getElementById('os-' + s.toLowerCase());
+      el.className = 'os-btn';
+      if (s === status) el.className = 'os-btn sel-' + s.toLowerCase();
+    });
+  }
+
+  function buildOverrideFields(asset) {
+    const container = document.getElementById('override-fields');
+    container.innerHTML = '';
+    const sensorMap = {
+      vibration:     'Vibration (m/s²)',
+      crack_index:   'Crack Index',
+      load_tons:     'Load (tons)',
+      temperature:   'Temperature (°C)',
+      wind_speed:    'Wind Speed (m/s)',
+      flicker_count: 'Flicker Count',
+      hours_offline: 'Hours Offline',
+      tilt_angle:    'Tilt Angle (°)',
+      co2:           'CO₂ (ppm)',
+      humidity:      'Humidity (%)',
+      pressure:      'Pressure',
+      flow_rate:     'Flow Rate',
+      defect_count:  'Defect Count',
+      avg_confidence:'Avg Confidence',
+    };
+    Object.entries(sensorMap).forEach(([key, label]) => {
+      if (asset[key] === null || asset[key] === undefined) return;
+      container.innerHTML += '<div class="ov-field"><label>' + label + '</label>' +
+        '<input type="number" id="ov-' + key + '" value="' + asset[key] + '" step="0.01" /></div>';
+    });
+    document.getElementById('ov-reason').value = asset.reason || '';
+    if (asset.health_status) setOverrideStatus(asset.health_status);
+  }
+
+  async function saveOverride() {
+    const reason = document.getElementById('ov-reason').value.trim();
+    if (!overrideStatus) { alert('Please select a health status.'); return; }
+
+    const updates = { health_status: overrideStatus, reason };
+    const sensorKeys = ['vibration','crack_index','load_tons','temperature','wind_speed',
+      'flicker_count','hours_offline','tilt_angle','co2','humidity','pressure','flow_rate',
+      'defect_count','avg_confidence'];
+    sensorKeys.forEach(key => {
+      const el = document.getElementById('ov-' + key);
+      if (el) updates[key] = parseFloat(el.value) || null;
+    });
+
+    try {
+      await fetch(API + '/assets/' + assetData.asset_id + '/override', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+    } catch(e) {}
+
+    const s = overrideStatus.toLowerCase();
+    const badge = document.getElementById('status-badge');
+    badge.className = 'status-badge pill-' + s;
+    badge.innerHTML = '<span class="status-dot dot-' + s + '"></span>' + overrideStatus;
+
+    const reasonBox = document.getElementById('reason-box');
+    reasonBox.textContent = reason || 'Manually overridden by admin.';
+    reasonBox.className = 'reason-box status-' + s;
+
+    document.getElementById('override-confirm').style.display = 'block';
+    setTimeout(() => { document.getElementById('override-confirm').style.display = 'none'; }, 3000);
+  }
+
+  init();
+</script>
+</body>
+</html>
