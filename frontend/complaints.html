@@ -362,12 +362,12 @@ let allComplaints = [];
 let currentFilter = 'All';
 
 function logout() {
-  sessionStorage.clear();
+  sessionStorage.removeItem('role');
   location.href = 'login.html';
 }
 
 // Guard — admin only
-const role = sessionStorage.getItem('cityzen_role');
+const role = sessionStorage.getItem('role');
 if (role !== 'admin') {
   location.href = 'login.html';
 }
