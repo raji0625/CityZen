@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complaints — CityZen</title>
+<style>
+  :root {
+    --bg:      #0d0f14;
+    --card:    #13161d;
+    --card2:   #191d26;
+    --border:  #232732;
+    --cyan:    #22d3c8;
+    --muted:   #8892aa;
+    --white:   #f0f4ff;
+    --red:     #f05252;
+    --yellow:  #f0a030;
+    --green:   #22d3a0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    min-height: 100vh;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0 1.5rem;
+    height: 52px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-brand {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--cyan);
+    text-decoration: none;
+    margin-right: auto;
+  }
+  .nav-link {
+    font-size: 0.82rem;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .nav-link:hover, .nav-link.active {
+    color: var(--cyan);
+    background: rgba(34,211,200,0.08);
+  }
+  .nav-logout {
+    font-size: 0.82rem;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: color 0.15s;
+  }
+  .nav-logout:hover { color: var(--red); }
+
+  /* MAIN */
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .page-title { font-size: 1.5rem; font-weight: 700; }
+  .page-title span { color: var(--cyan); }
+
+  /* STATS ROW */
+  .stats-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    flex: 1;
+    min-width: 120px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .stat-card .num {
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+  .stat-card .lbl {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .num.open   { color: var(--red); }
+  .num.prog   { color: var(--yellow); }
+  .num.done   { color: var(--green); }
+  .num.total  { color: var(--cyan); }
+
+  /* FILTERS */
+  .filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .chip {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--card2);
+    color: var(--muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chip.active, .chip:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(34,211,200,0.08);
+  }
+
+  /* TABLE */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--card2); }
+  th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .badge-open     { background: rgba(240,82,82,0.15);   color: var(--red);    border: 1px solid rgba(240,82,82,0.3); }
+  .badge-progress { background: rgba(240,160,48,0.15);  color: var(--yellow); border: 1px solid rgba(240,160,48,0.3); }
+  .badge-resolved { background: rgba(34,211,160,0.15);  color: var(--green);  border: 1px solid rgba(34,211,160,0.3); }
+
+  .sev-high   { color: var(--red);    font-weight: 600; }
+  .sev-medium { color: var(--yellow); font-weight: 600; }
+  .sev-low    { color: var(--green);  font-weight: 600; }
+
+  /* EXPAND ROW */
+  .expand-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .expand-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  .detail-row { display: none; }
+  .detail-row.open { display: table-row; }
+  .detail-cell {
+    background: var(--card2) !important;
+    padding: 14px 18px !important;
+  }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .detail-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; }
+  .detail-val   { font-size: 0.85rem; color: var(--white); }
+
+  /* STATUS UPDATE */
+  .status-select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--white);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-right: 6px;
+  }
+  .note-input {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--white);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.82rem;
+    width: 100%;
+    margin-top: 8px;
+    resize: none;
+  }
+  .note-input:focus { outline: none; border-color: var(--cyan); }
+  .save-btn {
+    margin-top: 8px;
+    background: var(--cyan);
+    color: #0d0f14;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .save-btn:hover { opacity: 0.85; }
+
+  .asset-link {
+    color: var(--cyan);
+    text-decoration: none;
+    font-size: 0.78rem;
+  }
+  .asset-link:hover { text-decoration: underline; }
+
+  .empty {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+  }
+  .spinner {
+    width: 28px; height: 28px;
+    border: 3px solid var(--border);
+    border-top-color: var(--cyan);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: var(--card2);
+    border: 1px solid var(--cyan);
+    color: var(--white);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">CityZen</a>
+  <a href="index.html" class="nav-link">Dashboard</a>
+  <a href="complaints.html" class="nav-link active">Complaints</a>
+  <a href="checker.html" class="nav-link">Anomaly Checker</a>
+  <button class="nav-logout" onclick="logout()">Logout</button>
+</nav>
+
+<main>
+  <div class="page-header">
+    <div class="page-title">All <span>Complaints</span></div>
+    <div style="font-size:0.8rem;color:var(--muted)" id="last-refresh"></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="num total" id="s-total">—</div><div class="lbl">Total</div></div>
+    <div class="stat-card"><div class="num open"  id="s-open">—</div><div class="lbl">Open</div></div>
+    <div class="stat-card"><div class="num prog"  id="s-prog">—</div><div class="lbl">In Progress</div></div>
+    <div class="stat-card"><div class="num done"  id="s-done">—</div><div class="lbl">Resolved</div></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="chip active" onclick="setFilter('All', this)">All</div>
+    <div class="chip" onclick="setFilter('Open', this)">Open</div>
+    <div class="chip" onclick="setFilter('In Progress', this)">In Progress</div>
+    <div class="chip" onclick="setFilter('Resolved', this)">Resolved</div>
+    <div class="chip" onclick="setFilter('High', this)">🔴 High</div>
+    <div class="chip" onclick="setFilter('Medium', this)">🟡 Medium</div>
+    <div class="chip" onclick="setFilter('Low', this)">🟢 Low</div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      Loading complaints…
+    </div>
+    <table id="complaints-table" style="display:none">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Asset</th>
+          <th>Reporter</th>
+          <th>Severity</th>
+          <th>Assigned To</th>
+          <th>Status</th>
+          <th>Submitted</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">No complaints found.</div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api';
+let allComplaints = [];
+let currentFilter = 'All';
+
+function logout() {
+  sessionStorage.clear();
+  location.href = 'login.html';
+}
+
+// Guard — admin only
+const role = sessionStorage.getItem('cityzen_role');
+if (role !== 'admin') {
+  location.href = 'login.html';
+}
+
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function filtered() {
+  if (currentFilter === 'All') return allComplaints;
+  return allComplaints.filter(c =>
+    c.status === currentFilter || c.severity === currentFilter
+  );
+}
+
+function sevClass(s) {
+  if (!s) return '';
+  const sl = s.toLowerCase();
+  if (sl === 'high')   return 'sev-high';
+  if (sl === 'medium') return 'sev-medium';
+  return 'sev-low';
+}
+
+function badgeClass(s) {
+  if (!s) return 'badge-open';
+  const sl = s.toLowerCase();
+  if (sl === 'resolved')    return 'badge-resolved';
+  if (sl === 'in progress') return 'badge-progress';
+  return 'badge-open';
+}
+
+function fmt(dt) {
+  if (!dt) return '—';
+  const d = new Date(dt);
+  return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })
+    + ' ' + d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+}
+
+function render() {
+  const data = filtered();
+  const tbody = document.getElementById('tbody');
+  const table = document.getElementById('complaints-table');
+  const empty = document.getElementById('empty');
+
+  if (data.length === 0) {
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  table.style.display = 'table';
+  empty.style.display = 'none';
+
+  tbody.innerHTML = data.map((c, i) => `
+    <tr>
+      <td style="color:var(--muted);font-size:0.78rem">#${c.id}</td>
+      <td>
+        <div style="font-weight:600">${c.asset_name || c.asset_id}</div>
+        <a href="asset.html?id=${c.asset_id}" class="asset-link">${c.asset_id} ↗</a>
+      </td>
+      <td>
+        <div>${c.reporter_name || '—'}</div>
+        <div style="color:var(--muted);font-size:0.75rem">${c.contact || ''}</div>
+      </td>
+      <td><span class="${sevClass(c.severity)}">${c.severity || '—'}</span></td>
+      <td style="font-size:0.8rem;color:var(--muted)">${c.assigned_to || '—'}</td>
+      <td><span class="badge ${badgeClass(c.status)}">${c.status || 'Open'}</span></td>
+      <td style="font-size:0.78rem;color:var(--muted)">${fmt(c.submitted_at)}</td>
+      <td><button class="expand-btn" onclick="toggleDetail(${c.id})">Details</button></td>
+    </tr>
+    <tr class="detail-row" id="detail-${c.id}">
+      <td colspan="8" class="detail-cell">
+        <div class="detail-grid">
+          <div>
+            <div class="detail-label">Description</div>
+            <div class="detail-val">${c.description || '—'}</div>
+          </div>
+          <div>
+            <div class="detail-label">Admin Note</div>
+            <div class="detail-val">${c.admin_note || '—'}</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <select class="status-select" id="sel-${c.id}">
+            <option ${c.status==='Open'?'selected':''}>Open</option>
+            <option ${c.status==='In Progress'?'selected':''}>In Progress</option>
+            <option ${c.status==='Resolved'?'selected':''}>Resolved</option>
+          </select>
+        </div>
+        <textarea class="note-input" id="note-${c.id}" rows="2" placeholder="Add admin note…">${c.admin_note || ''}</textarea>
+        <button class="save-btn" onclick="saveComplaint(${c.id})">Save</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function toggleDetail(id) {
+  const row = document.getElementById(`detail-${id}`);
+  row.classList.toggle('open');
+}
+
+async function saveComplaint(id) {
+  const status    = document.getElementById(`sel-${id}`).value;
+  const adminNote = document.getElementById(`note-${id}`).value;
+  try {
+    await fetch(`${API}/complaints/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, admin_note: adminNote })
+    });
+    // Update local data
+    const c = allComplaints.find(x => x.id === id);
+    if (c) { c.status = status; c.admin_note = adminNote; }
+    render();
+    showToast('✓ Complaint updated');
+  } catch(e) {
+    showToast('Error saving — try again');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+async function load() {
+  try {
+    const res  = await fetch(`${API}/complaints`);
+    allComplaints = await res.json();
+
+    // Stats
+    document.getElementById('s-total').textContent = allComplaints.length;
+    document.getElementById('s-open').textContent  = allComplaints.filter(c => c.status === 'Open').length;
+    document.getElementById('s-prog').textContent  = allComplaints.filter(c => c.status === 'In Progress').length;
+    document.getElementById('s-done').textContent  = allComplaints.filter(c => c.status === 'Resolved').length;
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('last-refresh').textContent = 'Refreshed ' + new Date().toLocaleTimeString('en-IN');
+
+    render();
+  } catch(e) {
+    document.getElementById('loading').innerHTML = '<div style="color:var(--red)">Failed to load complaints. Is the server running?</div>';
+  }
+}
+
+load();
+</script>
+</body>
+</html>
